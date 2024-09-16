@@ -1,0 +1,61 @@
+---
+services:
+  vaultwarden:
+    image: {{ vw_image }}:{{ vw_version }}
+    deploy:
+      resources:
+        limits:
+          cpus: "{{ vw_resources_limits.cpus }}"
+          memory: "{{ vw_resources_limits.memory }}"
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - globalSettings__mail__replyToEmail={{ vw_mail_replyTo }}
+      - globalSettings__mail__smtp__host={{ vw_mail_smtp_host }}
+      - globalSettings__mail__smtp__username={{ vw_mail_smtp_username }}
+      - globalSettings__mail__smtp__password={{ vw_mail_smtp_password }}
+      - globalSettings__mail__smtp__ssl={{ vw_mail_smtp_ssl }}
+      - globalSettings__mail__smtp__port={{ vw_mail_smtp_port }}
+      - globalSettings__disableUserRegistration={{ vw_disableUserRegistration }}
+      - DOMAIN={{ vw_domain }}
+      - ADMIN_TOKEN={{ vw_admin_token }}
+      - LOG_FILE=/data/logs/access.log
+      - WEBSOCKET_ENABLED={{ vw_websocket_enabled }}
+      - ROCKET_ENV={{ vw_rocket_env }}
+      - ROCKET_WORKERS={{ vw_rocket_workers }}
+      - TZ={{ env_timezone }}
+      - LOG_LEVEL={{vw_loglevel}}
+      - EXTENDED_LOGGING={{ vw_extended_logging }}
+    restart: unless-stopped
+    volumes:
+      - {{ vw_volumes_data }}:/data
+      - {{ vw_volumes_logs }}:/data/logs
+    networks:
+      - webproxy
+    logging:
+      driver: "{{ vw_logging.driver }}"
+      options:
+        max-size: "{{ vw_logging.max_size }}"
+        max-file: "{{ vw_logging.max_file}}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network={{ traefik_docker_network }}"
+      - "traefik.http.routers.{{ vw_router_traefik }}-https.tls=true"
+      - "traefik.http.routers.{{ vw_router_traefik }}-https.entrypoints=websecure"
+      - "traefik.http.routers.{{ vw_router_traefik }}-https.rule={{ vw_domains }}"
+      - "traefik.http.routers.{{ vw_router_traefik }}-https.service={{ vw_router_traefik }}"
+      - "traefik.http.services.{{ vw_router_traefik }}.loadbalancer.server.port=80"
+      {% if traefik_tls_provider == "letsencrypt" %}
+
+      - "traefik.http.routers.{{ vw_router_traefik }}-http.entrypoints=web"
+      - "traefik.http.routers.{{ vw_router_traefik }}-http.rule={{ vw_domains }}"
+      - "traefik.http.routers.{{ vw_router_traefik }}-http.service={{ vw_router_traefik }}"
+      - "traefik.http.routers.{{ vw_router_traefik }}-https.tls.certresolver=letsencrypt"
+      {% elif traefik_tls_provider == "cloudflare" %}
+
+      - "traefik.http.routers.{{ vw_router_traefik }}-https.tls.certresolver=cloudflare"
+      {% endif %}
+      
+networks:
+  {{ traefik_docker_network }}:
+    external: true

@@ -1,2 +1,13 @@
 ---
 # tasks file for mfic.vaultwarden
+- name: Make sure base path exists
+  ansible.builtin.file:
+    path: "{{ project_dir }}"
+    state: directory
+
+- name: Copy required files
+  ansible.builtin.template:
+    src: "{{ item }}"
+    dest: "{{ project_dir }}"
+  with_items:
+    - docker-compose.yml

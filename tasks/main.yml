@@ -11,3 +11,8 @@
     dest: "{{ project_dir }}"
   with_items:
     - docker-compose.yml
+- name: Creating an .env-file
+  copy:
+    dest: "{{ project_dir }}/.env"
+    content: |
+      ADMIN_TOKEN={{ vw_admin_token }}

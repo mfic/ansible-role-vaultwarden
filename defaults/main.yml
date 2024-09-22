@@ -1,6 +1,10 @@
 ---
 # defaults file for mfic.vaultwarden
 project_dir: "/docker"
+traefik_docker_network: "webproxy"
+traefik_tls_provider: cloudflare
+vw_router_traefik: "webproxy"
+vw_domains: "HOST(`fqdn`)"
 vw_image: "vaultwarden/server"
 vw_version: "latest"
 vw_mail_replyTo:  "smtp_reply_account"
@@ -9,6 +13,8 @@ vw_mail_smtp_username: "smtp_username"
 vw_mail_smtp_password: "smtp_password"
 vw_mail_smtp_ssl: "true"
 vw_mail_smtp_port: "587"
+vw_domain: "fqdn"
+vw_admin_token: "a_secure_token"
 vw_disableUserRegistration: "true"
 vw_websocket_enabled: "true"
 vw_rocket_env: "prod"
@@ -18,3 +24,27 @@ vw_loglevel: "error"
 vw_extended_logging: "true"
 vw_volumes_data: "./data/vautlwarden"
 vw_volumes_logs: "./data/log"
+vw_logging:
+  driver: "json-file"
+  max_size: "1M"
+  max_file: "3"
+vw_resources_limits:
+  cpus: "0.5"
+  memory: "300M"
+
+db_backend: "postgresql" # or mysql
+db_version: "14"
+db_root_password: "supersecurepassword"
+db_user: "vaultwarden"
+db_password: "securepassword"
+db_host: "db"
+db_port: "5432" # or 3389
+db_name: "vaultwarden"
+db_volumes: "./data/db"
+db_logging:
+  driver: "json-file"
+  max_size: "1m"
+  max_file: "10"
+db_resources_limits:
+  cpus: "0.5"
+  memory: "300M"

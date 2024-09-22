@@ -10,6 +10,7 @@ services:
     security_opt:
       - no-new-privileges:true
     environment:
+      - DATABASE_URL={{ db_backend }}://{{ db_user }}:{{ db_password }}@{{ db_host }}:{{ db_port }}/{{ db_name }}
       - globalSettings__mail__replyToEmail={{ vw_mail_replyTo }}
       - globalSettings__mail__smtp__host={{ vw_mail_smtp_host }}
       - globalSettings__mail__smtp__username={{ vw_mail_smtp_username }}
@@ -31,6 +32,7 @@ services:
       - {{ vw_volumes_data }}:/data
       - {{ vw_volumes_logs }}:/data/logs
     networks:
+      - default
       - webproxy
     logging:
       driver: "{{ vw_logging.driver }}"
@@ -56,6 +58,34 @@ services:
       - "traefik.http.routers.{{ vw_router_traefik }}-https.tls.certresolver=cloudflare"
       {% endif %}
       
+  db:
+    image: {{ db_backend}}:{{ db_version }}
+    restart: unless-stopped
+    environment:
+      {% if db_backend == "mysql" %}
+
+      MYSQL_ROOT_PASSWORD: {{ db_root_password }}
+      MYSQL_DATABASE: {{ db_name }}
+      MYSQL_USER: {{ db_user }}
+      MYSQL_PASSWORD: {{ db_password }}
+      {% elif db_backend == "postgresql" %}
+
+      POSTGRES_USER: {{ db_user }}
+      POSTGRES_PASSWORD: {{ db_password }}
+      POSTGRES_DB: {{ db_name }}
+      {% endif %}
+
+    volumes:
+      {% if db_backend == "mysql" %}
+      
+      - {{ db_volumes }}:/var/lib/mysql
+      {% elif db_backend == "postgresql" %}
+      
+      - {{ db_volumes }}:/var/lib/postgresql/data
+      {% endif %}
+    networks:
+      - default
+
 networks:
   {{ traefik_docker_network }}:
     external: true

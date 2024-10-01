@@ -2,7 +2,15 @@
 # defaults file for mfic.vaultwarden
 project_dir: "/docker"
 traefik_docker_network: "webproxy"
-vw_domains: "Host(`fwdn`)"
+traefik_tls_provider: "letsencrypt"
+vw_resources_limits:
+  cpus: "0.5"
+  memory: "300M"
+vw_logging:
+  driver: "json-file"
+  max_size: "1m"
+  max_file: "10"
+vw_domains: "Host(`fqdn`)"
 vw_image: "vaultwarden/server"
 vw_version: "latest"
 vw_mail_replyTo:  "smtp_reply_account"
@@ -23,6 +31,13 @@ vw_volumes_logs: "./data/log"
 
 db_backend: "postgresql" # or mysql
 db_version: "8"
+db_ressources_limits:
+  cpus: "0.5"
+  memory: "300M"
+db_logging:
+  driver: "json-file"
+  max_size: "1m"
+  max_file: "10"
 db_user: "vaultwarden"
 db_password: "securepassword"
 db_host: "db"
